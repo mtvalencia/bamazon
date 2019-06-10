@@ -10,7 +10,8 @@ var con = mysql.createConnection({
     password: process.env.db_password,
     database: "bamazon"
   });
-  
+ 
+
   con.connect(function(err) {
     if (err) throw err;
     con.query("SELECT * FROM bamazon.products",  function (err, result, fields) {
@@ -21,6 +22,15 @@ var con = mysql.createConnection({
       inq();
     });
   });
+
+  var cnt = function() {
+      con.query("SELECT * FROM bamazon.products",  function (err, result, fields) {
+        if (err) throw err;
+        console.table(result);
+        console.log("Updated: " + moment().format("dddd, MMMM Do YYYY, h:mm:ss a"));
+        inq();
+      });
+  }
 
   var inq = function() {
     inquirer.prompt([
@@ -45,16 +55,14 @@ var con = mysql.createConnection({
         filter: Number
         }])
         .then(function(answer) {
-          // based on their answer, either call the bid or the post functions
-          console.log(answer);
+          var query = 'SELECT * FROM bamazon.products WHERE ?';
+          con.query(query, [{item_id: answer.product}], function(err, res) {
+            for (var i = 0; i < res.length; i++) {
+              console.log(res[i]);
+            }
+            setTimeout(() => {
+              cnt();
+            }, 2000);
+          });
         });
-}
-
-// function checkInv() {
-//   if (condition) {
-    
-//   }
-// }
-
-// console.log('\nYour order: ');
-// console.log(JSON.stringify(answers, null, '  '));
+}// End of inq function
